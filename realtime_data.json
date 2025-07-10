@@ -1,0 +1,22 @@
+{
+  "sensor_data": {
+    "temperature": 20.54,
+    "humidity": 39.04,
+    "light_level": 823,
+    "motion_detected": false
+  },
+  "servo_positions": {
+    "servo1": 91,
+    "servo2": 74,
+    "servo3": 178,
+    "servo4": 161
+  },
+  "system_stats": {
+    "cpu_temp": 60.2,
+    "free_memory": 742,
+    "network_status": "Connected",
+    "battery_level": 90
+  },
+  "timestamp": "2025-07-10T04:08:44.640786",
+  "uptime_seconds": 1752116924.6408243
+}
