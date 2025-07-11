@@ -7,6 +7,8 @@ from arduino_controller import ArduinoController
 
 app = Flask(__name__)
 
+# 根据实际需要设置人数，这里假设为4人
+number_of_persons = 4  
 # 初始化Arduino控制器
 arduino = ArduinoController()
 
@@ -32,8 +34,8 @@ def receive_angles():
         angles = data['angles']
         
         # 验证角度数据
-        if len(angles) != 4:
-            return jsonify({'success': False, 'error': '需要4个角度值'})
+        if len(angles) != number_of_persons:
+            return jsonify({'success': False, 'error': f'需要{number_of_persons}个角度值'})
         
         for i, angle in enumerate(angles):
             if not isinstance(angle, (int, float)) or not (0 <= angle <= 180):
