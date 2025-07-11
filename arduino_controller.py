@@ -23,7 +23,10 @@ class ArduinoController:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
             print(f"成功连接到Arduino: {self.port} (波特率: {self.baudrate})")
             time.sleep(2)  # 等待Arduino初始化
-    
+        except serial.SerialException as e:
+            print(f"连接Arduino失败: {e}")
+            self.ser = None
+            
     def is_connected(self):
         """检查是否已连接"""
         return self.ser is not None and self.ser.is_open

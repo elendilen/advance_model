@@ -29,7 +29,7 @@ def receive_angles():
     try:
         data = request.get_json()
         if not data or 'angles' not in data:
-            return jsonify({'success': False, 'error': '数据格式错误，需要angles字段'})
+            return jsonify({'success': False, 'error': '数据格式错误,需要angles字段'})
         
         angles = data['angles']
         
@@ -82,7 +82,7 @@ def send_angles():
         # 验证角度范围
         for angle in angles:
             if not (0 <= angle <= 180):
-                return f"错误：角度值必须在0-180之间"
+                return f"错误:角度值必须在0-180之间"
         
         print(f"网页手动发送: {angles}")
         
@@ -96,7 +96,7 @@ def send_angles():
             latest_angles['status'] = '手动发送成功'
             return redirect('/')
         else:
-            return "错误：Arduino通信失败"
+            return "错误:Arduino通信失败"
     
     except Exception as e:
         return f"错误：{e}"
@@ -105,4 +105,4 @@ if __name__ == '__main__':
     print("启动Flask服务器...")
     print("队友可以发送POST请求到: http://你的IP:5000/api/receive_angles")
     print("数据格式: {\"angles\": [角度1, 角度2, 角度3, 角度4]}")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
