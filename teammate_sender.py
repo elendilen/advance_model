@@ -16,7 +16,7 @@ API_URL = f"http://{RASPBERRY_PI_IP}:5000/api/receive_angles"
 
 class TeammateSender:
     def __init__(self, teammate_url=None):
-        self.teammate_url = teammate_url or "http://192.168.1.100:5000"  # 队友的IP地址，需要根据实际情况修改
+        self.teammate_url = teammate_url or "http://192.168.235.41:5000"  # 队友的IP地址，需要根据实际情况修改
         self.timeout = 10
     
     def set_teammate_url(self, url):

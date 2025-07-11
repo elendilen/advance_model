@@ -4,14 +4,15 @@
 负责拍照功能
 """
 
-import cv2
+from picamera2 import Picamera2
 import os
 from datetime import datetime
+import time
 
 class CameraController:
     def __init__(self, camera_index=0):
         self.camera_index = camera_index
-        self.cap = None
+        self.picam2 = None
         self.photos_dir = "photos"
         self._ensure_photos_dir()
     
@@ -24,34 +25,33 @@ class CameraController:
     def initialize_camera(self):
         """初始化摄像头"""
         try:
-            self.cap = cv2.VideoCapture(self.camera_index)
-            if not self.cap.isOpened():
-                print(f"无法打开摄像头 {self.camera_index}")
-                return False
+            self.picam2 = Picamera2()
             
-            # 设置摄像头参数
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-            print(f"摄像头 {self.camera_index} 初始化成功")
+            # 配置相机
+            config = self.picam2.create_still_configuration(
+                main={"size": (1920, 1080)},  # 高分辨率拍照
+                lores={"size": (640, 480)},   # 低分辨率预览
+                display="lores"
+            )
+            self.picam2.configure(config)
+            
+            # 启动相机
+            self.picam2.start()
+            time.sleep(2)  # 等待相机稳定
+            
+            print(f"PiCamera2 初始化成功")
             return True
         except Exception as e:
-            print(f"初始化摄像头失败: {e}")
+            print(f"初始化相机失败: {e}")
             return False
     
     def take_photo(self, photo_name=None):
         """拍照并保存"""
-        if not self.cap or not self.cap.isOpened():
+        if not self.picam2:
             if not self.initialize_camera():
                 return None
         
         try:
-            # 读取几帧以确保摄像头稳定
-            for _ in range(5):
-                ret, frame = self.cap.read()
-                if not ret:
-                    print("无法从摄像头读取画面")
-                    return None
-            
             # 生成文件名
             if not photo_name:
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -59,14 +59,10 @@ class CameraController:
             
             photo_path = os.path.join(self.photos_dir, photo_name)
             
-            # 保存照片
-            success = cv2.imwrite(photo_path, frame)
-            if success:
-                print(f"照片已保存: {photo_path}")
-                return photo_path
-            else:
-                print("保存照片失败")
-                return None
+            # 拍照并保存
+            self.picam2.capture_file(photo_path)
+            print(f"照片已保存: {photo_path}")
+            return photo_path
                 
         except Exception as e:
             print(f"拍照时出错: {e}")
@@ -79,9 +75,15 @@ class CameraController:
     
     def release_camera(self):
         """释放摄像头资源"""
-        if self.cap:
-            self.cap.release()
-            print("摄像头资源已释放")
+        if self.picam2:
+            try:
+                self.picam2.stop()
+                self.picam2.close()
+                print("相机资源已释放")
+            except Exception as e:
+                print(f"释放相机资源时出错: {e}")
+            finally:
+                self.picam2 = None
     
     def __del__(self):
         """析构函数"""

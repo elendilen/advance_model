@@ -1,4 +1,4 @@
 flask
 pyserial
-opencv-python
+picamera2
 requests

@@ -10,7 +10,7 @@ app = Flask(__name__)
 # 初始化控制器
 arduino = ArduinoController()
 camera = CameraController()
-teammate = TeammateSender("http://192.168.1.100:5000")
+teammate = TeammateSender("http://192.168.235.41:5000")
 
 # 存储角度数据
 latest_angles = {
