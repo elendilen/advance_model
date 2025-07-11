@@ -101,6 +101,25 @@ def send_angles():
     except Exception as e:
         return f"错误：{e}"
 
+@app.route('/rotate', methods=['POST'])
+def rotate():
+    """发送旋转命令到Arduino"""
+    for i in range(90):
+        print(f"发送第{i+1}次旋转命令...")
+        success = arduino.send_rotate()
+        if not success:
+            return f"错误:发送第{i+1}次旋转命令失败"
+        
+        # 等待Arduino发送END信号
+        print(f"等待第{i+1}次旋转的END信号...")
+        end_received = arduino.recieve_end(timeout=10)  # 10秒超时
+        if not end_received:
+            return f"错误:第{i+1}次旋转未收到END信号"
+        
+        print(f"第{i+1}次旋转完成")
+    
+    return "旋转完成:所有90次旋转已执行完毕"
+
 if __name__ == '__main__':
     print("启动Flask服务器...")
     print("队友可以发送POST请求到: http://你的IP:5000/api/receive_angles")

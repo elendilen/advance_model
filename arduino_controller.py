@@ -31,6 +31,53 @@ class ArduinoController:
         """检查是否已连接"""
         return self.ser is not None and self.ser.is_open
     
+    def send_rotate(self):
+        """发送旋转命令到Arduino"""
+        if not self.is_connected():
+            print("Arduino未连接,无法发送旋转命令")
+            return False
+        
+        try:
+            command = "r"  # 假设'r'是旋转命令
+            self.ser.write(command.encode('utf-8'))
+            print("发送旋转命令到Arduino")
+            return True
+        except Exception as e:
+            print(f"发送旋转命令时出错: {e}")
+            return False
+
+    def recieve_end(self, timeout=30):
+        """接收Arduino发送的结束信号，持续等待直到收到END信号"""
+        if not self.is_connected():
+            print("Arduino未连接,无法接收结束信号")
+            return False
+        
+        start_time = time.time()
+        print("等待Arduino发送END信号...")
+        
+        while True:
+            try:
+                # 检查是否超时
+                if time.time() - start_time > timeout:
+                    print(f"等待END信号超时({timeout}秒)")
+                    return False
+                
+                # 设置较短的超时时间来检查数据
+                if self.ser.in_waiting > 0:
+                    response = self.ser.readline().decode('utf-8').strip()
+                    if response == "END":
+                        print("接收到Arduino的结束信号")
+                        return True
+                    elif response:  # 如果收到其他非空信号
+                        print(f"接收到信号: {response}")
+                
+                # 短暂休眠避免CPU过度占用
+                time.sleep(0.1)
+                
+            except Exception as e:
+                print(f"接收数据时出错: {e}")
+                return False
+
     def send_angles(self, angles):
         """发送角度数据到Arduino"""       
         try:
@@ -38,7 +85,7 @@ class ArduinoController:
             
             for i, angle in enumerate(angles):
                 # 发送角度值
-                command = f"{angle}"
+                command = f"s {angle}"
                 self.ser.write(command.encode('utf-8'))
                 print(f"  发送角度{i+1}: {angle}°")
                 time.sleep(10)  # 给Arduino时间处理
