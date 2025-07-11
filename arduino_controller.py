@@ -18,7 +18,7 @@ class ArduinoController:
     
     def _connect(self):
         """连接到Arduino"""
-        self.port = "/dev/ttyS0"     
+        self.port = "/dev/ttyACM0"     
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
             print(f"成功连接到Arduino: {self.port} (波特率: {self.baudrate})")
@@ -65,6 +65,7 @@ class ArduinoController:
                 # 设置较短的超时时间来检查数据
                 if self.ser.in_waiting > 0:
                     response = self.ser.readline().decode('utf-8').strip()
+                    print(response)
                     if response == "END":
                         print("接收到Arduino的结束信号")
                         return True
@@ -88,13 +89,28 @@ class ArduinoController:
                 command = f"s {angle}"
                 self.ser.write(command.encode('utf-8'))
                 print(f"  发送角度{i+1}: {angle}°")
-                time.sleep(10)  # 给Arduino时间处理
+                time.sleep(0.5)  # 短暂延时确保数据发送完成
             
             print("所有角度发送完成")
             return True
             
         except Exception as e:
             print(f"发送数据到Arduino时出错: {e}")
+            return False
+    
+    def send_single_angle(self, angle):
+        """发送单个角度到Arduino并等待完成"""
+        if not self.is_connected():
+            print("Arduino未连接,无法发送角度")
+            return False
+        
+        try:
+            command = f"s {angle}"
+            self.ser.write(command.encode('utf-8'))
+            print(f"发送单个角度: {angle}°")
+            return True
+        except Exception as e:
+            print(f"发送单个角度时出错: {e}")
             return False
     
     def close(self):
