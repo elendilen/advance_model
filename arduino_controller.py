@@ -18,7 +18,7 @@ class ArduinoController:
     
     def _connect(self):
         """连接到Arduino"""
-        self.port = "/dev/ttyACM0"     
+        self.port = "/dev/ttyACM0"  # 根据实际情况修改端口  
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
             print(f"成功连接到Arduino: {self.port} (波特率: {self.baudrate})")
@@ -73,7 +73,7 @@ class ArduinoController:
                         print(f"接收到信号: {response}")
                 
                 # 短暂休眠避免CPU过度占用
-                time.sleep(0.1)
+                #time.sleep(0.1)
                 
             except Exception as e:
                 print(f"接收数据时出错: {e}")

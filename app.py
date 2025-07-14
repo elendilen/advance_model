@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, jsonify
 import time
+import os
 from datetime import datetime
 from arduino_controller import ArduinoController
 from camera_controller import CameraController
@@ -90,10 +91,11 @@ def start_rotation():
                     'progress': f"{rotation_number}/90"
                 })
         
+        arduino.send_single_angle(0)  # 重置角度
         print("=== 阶段2：等待角度数据 ===")
         
         # 等待角度数据
-        wait_timeout = 300  # 5分钟
+        wait_timeout = 60  # 1分钟
         start_time = time.time()
         
         while True:
@@ -107,7 +109,7 @@ def start_rotation():
                 break
             
             time.sleep(1)
-        
+        exit_code = os.system("rm -rf ~/advance_model/photos/*.jpg")  # 清理照片目录
         print("=== 阶段3：角度精确旋转 ===")
         
         # 角度旋转
@@ -134,6 +136,7 @@ def start_rotation():
         
         camera.release_camera()
         print("=== 旋转任务完成 ===")
+        arduino.send_single_angle(0)  # 重置角度
         return "旋转任务完成"
         
     except Exception as e:
