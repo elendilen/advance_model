@@ -46,6 +46,21 @@ class ArduinoController:
             print(f"发送旋转命令时出错: {e}")
             return False
 
+    def return_start(self):
+        """发送开始信号到Arduino"""
+        if not self.is_connected():
+            print("Arduino未连接,无法发送开始信号")
+            return False
+        
+        try:
+            command = "q"  # 假设'q'是开始命令
+            self.ser.write(command.encode('utf-8'))
+            print("发送开始信号到Arduino")
+            return True
+        except Exception as e:
+            print(f"发送开始信号时出错: {e}")
+            return False
+            
     def recieve_end(self, timeout=30):
         """接收Arduino发送的结束信号，持续等待直到收到END信号"""
         if not self.is_connected():
@@ -89,7 +104,7 @@ class ArduinoController:
                 command = f"s {angle}"
                 self.ser.write(command.encode('utf-8'))
                 print(f"  发送角度{i+1}: {angle}°")
-                time.sleep(0.5)  # 短暂延时确保数据发送完成
+                #time.sleep(0.5)  # 短暂延时确保数据发送完成
             
             print("所有角度发送完成")
             return True
