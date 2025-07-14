@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, jsonify
+from flask import Flask, request, render_template, redirect, jsonify, Response
 import time
 from datetime import datetime
 from arduino_controller import ArduinoController
@@ -22,6 +22,11 @@ latest_angles = {
 @app.route('/')
 def index():
     return render_template('index.html', data=latest_angles)
+
+@app.route('/video')
+def video_page():
+    """视频流页面"""
+    return render_template('video_stream.html')
 
 @app.route('/api/receive_angles', methods=['POST'])
 def receive_angles():
@@ -141,6 +146,47 @@ def clear_angles():
     latest_angles['timestamp'] = None
     latest_angles['status'] = '等待数据'
     return "角度数据已清除"
+
+@app.route('/api/video_feed')
+def video_feed():
+    """视频流接口"""
+    try:
+        if not camera.start_streaming():
+            return "无法启动视频流", 500
+        
+        return Response(camera.generate_frames(),
+                       mimetype='multipart/x-mixed-replace; boundary=frame')
+    except Exception as e:
+        print(f"视频流出错: {e}")
+        return f"视频流错误: {str(e)}", 500
+
+@app.route('/api/start_stream', methods=['POST'])
+def start_stream():
+    """启动视频流"""
+    try:
+        if camera.start_streaming():
+            return jsonify({'success': True, 'message': '视频流已启动'})
+        else:
+            return jsonify({'success': False, 'error': '无法启动视频流'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/stop_stream', methods=['POST'])
+def stop_stream():
+    """停止视频流"""
+    try:
+        camera.stop_streaming()
+        return jsonify({'success': True, 'message': '视频流已停止'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/stream_status')
+def stream_status():
+    """获取视频流状态"""
+    return jsonify({
+        'streaming': camera.streaming,
+        'camera_initialized': camera.picam2 is not None
+    })
 
 if __name__ == '__main__':
     print("启动服务器...")
