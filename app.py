@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, jsonify, Response
+from flask_cors import CORS
 import time
 from datetime import datetime
 from arduino_controller import ArduinoController
@@ -6,7 +7,7 @@ from camera_controller import CameraController
 from teammate_sender import TeammateSender
 
 app = Flask(__name__)
-
+CORS(app)
 # 初始化控制器
 arduino = ArduinoController()
 camera = CameraController()
@@ -68,6 +69,10 @@ def start_rotation():
     """开始两阶段旋转：完整旋转拍照 + 角度精确旋转"""
     try:
         print("开始两阶段旋转任务...")
+        
+        # 先停止视频流（如果正在运行）
+        camera.stop_streaming()
+        time.sleep(1)  # 给一点时间停止
         
         if not camera.initialize_camera():
             return "错误: 无法初始化相机"
@@ -187,6 +192,11 @@ def stream_status():
         'streaming': camera.streaming,
         'camera_initialized': camera.picam2 is not None
     })
+
+@app.route('/api/camera_status')
+def camera_status():
+    """获取相机状态"""
+    return jsonify(camera.get_camera_status())
 
 if __name__ == '__main__':
     print("启动服务器...")

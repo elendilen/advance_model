@@ -31,7 +31,12 @@ class CameraController:
     
     def initialize_camera(self):
         """初始化摄像头"""
+        # 如果相机已经初始化，先释放
+        if self.picam2:
+            self.release_camera()
+            
         try:
+            print("正在初始化相机...")
             self.picam2 = Picamera2()
             
             # 配置相机
@@ -82,8 +87,12 @@ class CameraController:
     
     def start_streaming(self):
         """开始视频流"""
+        # 停止任何现有的流
+        self.stop_streaming()
+        
         if not self.picam2:
             if not self.initialize_camera():
+                print("无法初始化相机用于视频流")
                 return False
         
         try:
@@ -92,6 +101,7 @@ class CameraController:
             return True
         except Exception as e:
             print(f"启动视频流失败: {e}")
+            self.streaming = False
             return False
     
     def stop_streaming(self):
@@ -139,6 +149,7 @@ class CameraController:
         self.stop_streaming()  # 先停止视频流
         if self.picam2:
             try:
+                print("正在释放相机资源...")
                 self.picam2.stop()
                 self.picam2.close()
                 print("相机资源已释放")
@@ -146,7 +157,20 @@ class CameraController:
                 print(f"释放相机资源时出错: {e}")
             finally:
                 self.picam2 = None
+                time.sleep(1)  # 给系统一点时间释放资源
     
     def __del__(self):
         """析构函数"""
         self.release_camera()
+    
+    def is_camera_ready(self):
+        """检查相机是否准备就绪"""
+        return self.picam2 is not None
+
+    def get_camera_status(self):
+        """获取相机状态信息"""
+        return {
+            'initialized': self.picam2 is not None,
+            'streaming': self.streaming,
+            'photos_dir': self.photos_dir
+        }
